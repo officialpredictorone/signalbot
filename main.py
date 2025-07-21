@@ -45,7 +45,7 @@ timeframes = ["1 минута"] * 7 + ["3 минуты"] * 2 + ["15 минут"]
 budget_options = ["10% от банка", "15% от банка", "20% от банка"]
 directions = ["📈 Вверх", "📉 Вниз"]
 
-@dp.message(F.text == "/start")
+@dp.message(F.text == "")
 async def start(message: Message, state: FSMContext):
     await message.answer("👋 Привет! Пожалуйста, отправь мне свой ID аккаунта")
     await state.set_state(Form.waiting_for_id)
