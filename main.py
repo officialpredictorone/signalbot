@@ -103,7 +103,10 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     pair = callback.data.split(":")[1]
     user_data[callback.from_user.id]["pair"] = pair
     btn = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")]]
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
+            [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
+        ]
     )
     await callback.message.answer(f"Отличная пара: {pair}\nГотов отправить сигнал. 👇", reply_markup=btn)
     await state.set_state(Form.ready_for_signals)
@@ -140,7 +143,10 @@ async def send_signal(callback: CallbackQuery):
     )
 
     btn = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")]]
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
+            [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
+        ]
     )
 
     await callback.message.answer(signal_text, reply_markup=btn)
@@ -174,7 +180,10 @@ async def scheduled_signals():
                 )
 
                 btn = InlineKeyboardMarkup(
-                    inline_keyboard=[[InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")]]
+                    inline_keyboard=[
+                        [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
+                        [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
+                    ]
                 )
 
                 try:
