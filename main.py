@@ -12,7 +12,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.client.default import DefaultBotProperties
 import logging
 
-TOKEN = "7628435014:AAEmjBCfuoO4C0JPwU7pS7AVz9RtVmuYZKM"
+TOKEN = "8160440178:AAENyedvsEdYdxkAnePFE8SeofMUGbyag_c"
 
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
 dp = Dispatcher(storage=MemoryStorage())
@@ -41,24 +41,24 @@ index_pairs = [
 
 all_pairs = otc_pairs + real_pairs + index_pairs
 
-timeframes = ["1 минута"] * 7 + ["3 минуты"] * 2 + ["15 минут"]
-budget_options = ["10% от банка", "15% от банка", "20% от банка"]
-directions = ["📈 Вверх", "📉 Вниз"]
+timeframes = ["1 minuto"] * 7 + ["3 minutos"] * 2 + ["15 minutos"]
+budget_options = ["10% del banco", "15% del banco", "20% del banco"]
+directions = ["📈 Arriba", "📉 Abajo"]
 
-@dp.message(F.text == "")
+@dp.message(F.text == "/start")
 async def start(message: Message, state: FSMContext):
-    await message.answer("👋 Привет! Пожалуйста, отправь мне свой ID аккаунта")
+    await message.answer("👋 ¡Hola! Por favor, envíame tu ID de cuenta.")
     await state.set_state(Form.waiting_for_id)
 
 @dp.message(Form.waiting_for_id)
 async def process_id(message: Message, state: FSMContext):
     user_data[message.from_user.id] = {"id": message.text}
     select_type_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🕹 OTC пары", callback_data="type_otc")],
-        [InlineKeyboardButton(text="📈 Реальные пары", callback_data="type_real")],
-        [InlineKeyboardButton(text="📊 Индексы", callback_data="type_index")]
+        [InlineKeyboardButton(text="🕹 Pares OTC", callback_data="type_otc")],
+        [InlineKeyboardButton(text="📈 Parejas reales", callback_data="type_real")],
+        [InlineKeyboardButton(text="📊 Índices", callback_data="type_index")]
     ])
-    await message.answer("✅ ID принят. Теперь выбери тип валютных пар:", reply_markup=select_type_keyboard)
+    await message.answer("✅Se acepta identificación. Ahora seleccione el tipo de par de divisas:", reply_markup=select_type_keyboard)
     await state.set_state(Form.waiting_for_type)
 
 @dp.callback_query(F.data == "type_otc")
@@ -67,7 +67,7 @@ async def show_otc_pairs(callback: CallbackQuery, state: FSMContext):
         inline_keyboard=[[InlineKeyboardButton(text=p, callback_data=f"pair:{p}")] for p in otc_pairs] +
                         [[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]]
     )
-    await callback.message.edit_text("Выбери OTC валютную пару:", reply_markup=kb)
+    await callback.message.edit_text("Seleccione el par de divisas OTC:", reply_markup=kb)
     await state.set_state(Form.waiting_for_pair)
 
 @dp.callback_query(F.data == "type_real")
@@ -76,7 +76,7 @@ async def show_real_pairs(callback: CallbackQuery, state: FSMContext):
         inline_keyboard=[[InlineKeyboardButton(text=p, callback_data=f"pair:{p}")] for p in real_pairs] +
                         [[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]]
     )
-    await callback.message.edit_text("Выбери реальную валютную пару:", reply_markup=kb)
+    await callback.message.edit_text("Seleccione un par de divisas real:", reply_markup=kb)
     await state.set_state(Form.waiting_for_pair)
 
 @dp.callback_query(F.data == "type_index")
@@ -85,17 +85,17 @@ async def show_index_pairs(callback: CallbackQuery, state: FSMContext):
         inline_keyboard=[[InlineKeyboardButton(text=p, callback_data=f"pair:{p}")] for p in index_pairs] +
                         [[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]]
     )
-    await callback.message.edit_text("Выбери индекс:", reply_markup=kb)
+    await callback.message.edit_text("Seleccionar índice:", reply_markup=kb)
     await state.set_state(Form.waiting_for_pair)
 
 @dp.callback_query(F.data == "back_to_types")
 async def back_to_type_selection(callback: CallbackQuery, state: FSMContext):
     select_type_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🕹 OTC пары", callback_data="type_otc")],
-        [InlineKeyboardButton(text="📈 Реальные пары", callback_data="type_real")],
-        [InlineKeyboardButton(text="📊 Индексы", callback_data="type_index")]
+        [InlineKeyboardButton(text="🕹 Pares OTC", callback_data="type_otc")],
+        [InlineKeyboardButton(text="📈 Parejas reales", callback_data="type_real")],
+        [InlineKeyboardButton(text="📊 Índices", callback_data="type_index")]
     ])
-    await callback.message.edit_text("Выбери тип валютных пар:", reply_markup=select_type_keyboard)
+    await callback.message.edit_text("Seleccione el tipo de pares de divisas:", reply_markup=select_type_keyboard)
     await state.set_state(Form.waiting_for_type)
 
 @dp.callback_query(F.data.startswith("pair:"))
@@ -103,12 +103,9 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     pair = callback.data.split(":")[1]
     user_data[callback.from_user.id]["pair"] = pair
     btn = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
-            [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
-        ]
+        inline_keyboard=[[InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")]]
     )
-    await callback.message.answer(f"Отличная пара: {pair}\nГотов отправить сигнал. 👇", reply_markup=btn)
+    await callback.message.answer(f"Gran pareja: {pair}\nListo para enviar señal. 👇", reply_markup=btn)
     await state.set_state(Form.ready_for_signals)
 
 @dp.callback_query(F.data == "get_signal")
@@ -118,12 +115,12 @@ async def send_signal(callback: CallbackQuery):
 
     if user_id in user_cooldowns and now < user_cooldowns[user_id]:
         remaining = int((user_cooldowns[user_id] - now).total_seconds())
-        await callback.answer(f"⏳ Подожди {remaining} сек. до следующего сигнала.", show_alert=True)
+        await callback.answer(f"⏳ Espere {remaining} un segundo hasta la siguiente señal.", show_alert=True)
         return
 
     user_cooldowns[user_id] = now + timedelta(minutes=5)
 
-    msg = await callback.message.answer("⏳ Подготовка сигнала...")
+    msg = await callback.message.answer("⏳ Preparando señal...")
     await asyncio.sleep(5)
     await msg.delete()
 
@@ -135,18 +132,15 @@ async def send_signal(callback: CallbackQuery):
     send_time = (datetime.utcnow() + timedelta(hours=5, minutes=2)).strftime("%H:%M")
 
     signal_text = (
-        f"Пара: *{pair}*\n"
-        f"Таймфрейм: *{tf}*\n"
-        f"Время: *{send_time}*\n"
-        f"Бюджет: *{budget}*\n"
-        f"Направление: *{direction}*"
+        f"Par: *{pair}*\n"
+        f"Periodo de tiempo: *{tf}*\n"
+        f"Tiempo: *{send_time}*\n"
+        f"Presupuesto: *{budget}*\n"
+        f"Dirección: *{direction}*"
     )
 
     btn = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
-            [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
-        ]
+        inline_keyboard=[[InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")], [InlineKeyboardButton(text="🔙 Atrás", callback_data="back_to_types")]]
     )
 
     await callback.message.answer(signal_text, reply_markup=btn)
@@ -172,18 +166,15 @@ async def scheduled_signals():
                 send_time = (datetime.utcnow() + timedelta(hours=5, minutes=2)).strftime("%H:%M")
 
                 text = (
-                    f"Пара: *{pair}*\n"
-                    f"Таймфрейм: *{tf}*\n"
-                    f"Время: *{send_time}*\n"
-                    f"Бюджет: *{budget}*\n"
-                    f"Направление: *{direction}*"
+                    f"Par: *{pair}*\n"
+                    f"Periodo de tiempo: *{tf}*\n"
+                    f"Tiempo: *{send_time}*\n"
+                    f"Presupuesto: *{budget}*\n"
+                    f"Dirección: *{direction}*"
                 )
 
                 btn = InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [InlineKeyboardButton(text="📩 ПОЛУЧИТЬ СИГНАЛ", callback_data="get_signal")],
-                        [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]
-                    ]
+                    inline_keyboard=[[InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")]]
                 )
 
                 try:
