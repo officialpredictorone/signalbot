@@ -1,4 +1,11 @@
-users.db
-uv.lock
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+env/
+.venv/
+*.db
+*.sqlite3
+.DS_Store
+.git
+.gitignore
