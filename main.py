@@ -111,14 +111,23 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "get_signal")
 async def send_signal(callback: CallbackQuery):
     user_id = callback.from_user.id
-    now = datetime.utcnow()
+    now = datetime.now()  # локальное время сервера
 
-    if user_id in user_cooldowns and now < user_cooldowns[user_id]:
-        remaining = int((user_cooldowns[user_id] - now).total_seconds())
-        await callback.answer(f"⏳ Espere {remaining} un segundo hasta la siguiente señal.", show_alert=True)
-        return
+    cooldown_until = user_cooldowns.get(user_id)
+    if cooldown_until:
+        remaining = (cooldown_until - now).total_seconds()
+        if remaining > 0:
+            minutes = int(remaining) // 60
+            seconds = int(remaining) % 60
+            await callback.answer(
+                f"⏳ Espera {minutes}minutos y {seconds}segundos hasta la próxima señal",
+                show_alert=True
+            )
+            return
 
+    # Устанавливаем новый кулдаун
     user_cooldowns[user_id] = now + timedelta(minutes=5)
+
 
     msg = await callback.message.answer("⏳ Preparando señal...")
     await asyncio.sleep(5)
