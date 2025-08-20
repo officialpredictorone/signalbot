@@ -145,7 +145,6 @@ async def send_signal(callback: CallbackQuery):
     send_time = (datetime.utcnow() + timedelta(hours=5, minutes=2)).strftime("%H:%M")
 
     signal_text = (
-        f"Par: *{pair}*\n"
         f"Periodo de tiempo: *{tf}*\n"
         f"Tiempo: *{send_time}*\n"
         f"Presupuesto: *{budget}*\n"
