@@ -120,7 +120,7 @@ async def send_signal(callback: CallbackQuery):
             minutes = int(remaining) // 60
             seconds = int(remaining) % 60
             await callback.answer(
-                f"⏳ Espere {minutes}m y {seconds} s hasta la siguiente señal.",
+                 f"⏳ Espere {minutes}m y {seconds} s hasta la siguiente señal.",
                 show_alert=True
             )
             return
@@ -133,7 +133,7 @@ async def send_signal(callback: CallbackQuery):
     await msg.delete()
 
     user = user_data.get(user_id)
-    pair = user["pair"]
+    pair = user.get("pair")
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
