@@ -133,7 +133,7 @@ async def send_signal(callback: CallbackQuery):
     await msg.delete()
 
     user = user_data.get(user_id, {})
-    pair = user.get("pair", "USD/JPY OTC")
+    pair = user.get("pair")
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
