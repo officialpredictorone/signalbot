@@ -12,9 +12,9 @@ COPY Procfile .
 
 # 4. Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
-
+ 
 # 5. Копируем всё остальное (например, если появятся новые файлы)
-COPY .dockerignore
+COPY .  .
 
 # 6. Указываем команду запуска
 CMD ["python", "main.py"]
