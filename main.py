@@ -157,9 +157,9 @@ async def scheduled_signals():
         now = datetime.utcnow() - timedelta(hours=5)
         hour = now.hour
         if 8 <= hour < 18:
-            wait = random.randint(60*60, 3*60*60)
+            wait = 3*60*60
         elif 19 <= hour <= 23:
-            wait = 60*60
+            wait = 30*60
         else:
             await asyncio.sleep(60)
             continue
