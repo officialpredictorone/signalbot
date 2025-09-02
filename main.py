@@ -142,7 +142,6 @@ async def send_signal(callback: CallbackQuery):
 
     signal_text = (
         f"Periodo de tiempo: *{tf}*\n"
-        f"Tiempo: *{send_time}*\n"
         f"Presupuesto: *{budget}*\n"
         f"Dirección: *{direction}*"
     )
@@ -176,7 +175,6 @@ async def scheduled_signals():
                 text = (
                     f"Par: *{pair}*\n"
                     f"Periodo de tiempo: *{tf}*\n"
-                    f"Tiempo: *{send_time}*\n"
                     f"Presupuesto: *{budget}*\n"
                     f"Dirección: *{direction}*"
                 )
