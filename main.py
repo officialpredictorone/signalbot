@@ -138,7 +138,7 @@ async def send_signal(callback: CallbackQuery):
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
-    send_time = (datetime.utcnow() + timedelta(hours=5, minutes=2)).strftime("%H:%M")
+    send_time = (datetime.utcnow() - timedelta(hours=5, minutes=2)).strftime("%H:%M")
 
     signal_text = (
         f"Periodo de tiempo: *{tf}*\n"
@@ -154,7 +154,7 @@ async def send_signal(callback: CallbackQuery):
 
 async def scheduled_signals():
     while True:
-        now = datetime.utcnow() + timedelta(hours=5)
+        now = datetime.utcnow() - timedelta(hours=5)
         hour = now.hour
         if 8 <= hour < 18:
             wait = random.randint(60*60, 3*60*60)
