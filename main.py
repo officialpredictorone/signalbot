@@ -101,12 +101,26 @@ async def back_to_type_selection(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data.startswith("pair:"))
 async def select_pair(callback: CallbackQuery, state: FSMContext):
-    pair = callback.data.split(":")[1]
-    user_data[callback.from_user.id]["pair"] = pair
+    pair = callback.data.split(":", 1)[1]
+    uid = callback.from_user.id
+
+    # если юзера нет в словаре — создаём пустой словарь
+    if uid not in user_data:
+        user_data[uid] = {}
+
+    user_data[uid]["pair"] = pair
+
     btn = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")]]
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")],
+            [InlineKeyboardButton(text="🔙 Atrás", callback_data="back_to_types")]
+        ]
     )
-    await callback.message.answer(f"Gran pareja: {pair}\nListo para enviar señal. 👇", reply_markup=btn)
+
+    await callback.message.answer(
+        f"Gran pareja: {pair}\nListo para enviar señal. 👇", 
+        reply_markup=btn
+    )
     await state.set_state(Form.ready_for_signals)
 
 @dp.callback_query(F.data == "get_signal")
