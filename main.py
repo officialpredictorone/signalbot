@@ -158,7 +158,7 @@ async def scheduled_signals():
         hour = now.hour
         if 8 <= hour < 18:
             wait = 3*60*60
-        elif 19 <= hour <= 23:
+        elif 18 <= hour <= 23:
             wait = 30*60
         else:
             await asyncio.sleep(60)
@@ -170,7 +170,7 @@ async def scheduled_signals():
                 tf = random.choice(timeframes)
                 budget = random.choice(budget_options)
                 direction = random.choice(directions)
-                send_time = (datetime.utcnow() + timedelta(hours=5, minutes=2)).strftime("%H:%M")
+                send_time = (datetime.utcnow() - timedelta(hours=5, minutes=2)).strftime("%H:%M")
 
                 text = (
                     f"Par: *{pair}*\n"
