@@ -98,8 +98,13 @@ async def back_to_type_selection(callback: CallbackQuery, state: FSMContext):
         [InlineKeyboardButton(text="📈 Parejas reales", callback_data="type_real")],
         [InlineKeyboardButton(text="📊 Índices", callback_data="type_index")]
     ])
+    
     # вместо edit_text отправляем НОВОЕ сообщение
-    await callback.message.answer("Seleccione el tipo de pares de divisas:", reply_markup=select_type_keyboard)
+    await callback.message.answer(
+        "Seleccione el tipo de pares de divisas:", 
+        reply_markup=select_type_keyboard
+    )
+    
     await state.set_state(Form.waiting_for_type)
 
 @dp.callback_query(F.data.startswith("pair:"))
