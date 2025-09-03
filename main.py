@@ -52,13 +52,16 @@ async def start(message: Message, state: FSMContext):
 
 @dp.message(Form.waiting_for_id)
 async def process_id(message: Message, state: FSMContext):
-    user_data[message.from_user.id] = {"id": message.text}
     select_type_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🕹 Pares OTC", callback_data="type_otc")],
         [InlineKeyboardButton(text="📈 Parejas reales", callback_data="type_real")],
         [InlineKeyboardButton(text="📊 Índices", callback_data="type_index")]
     ])
-    await message.answer("✅Se acepta identificación. Ahora seleccione el tipo de par de divisas:", reply_markup=select_type_keyboard)
+
+    await message.answer(
+        "✅ ID aceptado. Ahora seleccione el tipo de par de divisas:", 
+        reply_markup=select_type_keyboard
+    )
     await state.set_state(Form.waiting_for_type)
 
 @dp.callback_query(F.data == "type_otc")
