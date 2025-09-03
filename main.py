@@ -120,8 +120,7 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
 
     btn = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")],
-            [InlineKeyboardButton(text="🔙 Atrás", callback_data="back_to_types")]
+            [InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")]
         ]
     )
 
