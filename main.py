@@ -100,8 +100,17 @@ async def back_to_type_selection(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data.startswith("pair:"))
 async def select_pair(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # подтверждаем клик, чтобы не дублировалось
+
     pair = callback.data.split(":", 1)[1]
     uid = callback.from_user.id
+
+    # если юзер выбрал ту же пару — не дублируем сообщение
+    if uid in user_data and user_data[uid].get("pair") == pair:
+        return  
+
+    # сохраняем пару
+    user_data.setdefault(uid, {})
     user_data[uid]["pair"] = pair
 
     btn = InlineKeyboardMarkup(
@@ -112,10 +121,11 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.answer(
-        f"Gran pareja: {pair}\nListo para enviar señal. 👇", 
+        f"Gran pareja: {pair}\nListo para enviar señal. 👇",
         reply_markup=btn
     )
     await state.set_state(Form.ready_for_signals)
+
 
 @dp.callback_query(F.data == "get_signal")
 async def send_signal(callback: CallbackQuery):
