@@ -129,7 +129,7 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     uid = callback.from_user.id
 
     save_pair(uid, pair)
-    logging.info(f"✅ User {uid} выбрал пару {pair}")  # лог
+    logging.info(f"✅ User {uid} выбрал пару {pair}")  
 
     btn = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -140,29 +140,30 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(f"Gran pareja: {pair}\nListo para enviar señal. 👇", reply_markup=btn)
     await state.set_state(Form.ready_for_signals)
 
+
 @dp.callback_query(F.data == "get_signal")
-async def send_signal(callback: CallbackQuery):
+async def send_signal(callback: CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
-    now = datetime.now()
-
-    # проверяем кулдаун
-    cooldown_until = user_cooldowns.get(user_id)
-    if cooldown_until:
-        remaining = (cooldown_until - now).total_seconds()
-        if remaining > 0:
-            minutes = int(remaining) // 60
-            seconds = int(remaining) % 60
-            await callback.answer(f"⏳ Espera {minutes}min {seconds}seg hasta la próxima señal", show_alert=True)
-            return
-
-    user_cooldowns[user_id] = now + timedelta(minutes=5)
+    logging.info(f"👉 SIGNAL запрос от {user_id}")
 
     pair = get_pair(user_id)
-    logging.info(f"👉 Запрос сигнала от {user_id}, пара из базы: {pair}")  # лог
+    logging.info(f"🔍 Пара из базы для {user_id}: {pair}")
 
     if not pair:
         await callback.message.answer("⚠️ Сначала выбери валютную pareja!")
         return
+
+    # cooldown check
+    now = datetime.now()
+    cooldown_until = user_cooldowns.get(user_id)
+    if cooldown_until and (cooldown_until - now).total_seconds() > 0:
+        remaining = (cooldown_until - now).total_seconds()
+        minutes = int(remaining) // 60
+        seconds = int(remaining) % 60
+        await callback.answer(f"⏳ Espera {minutes}min {seconds}seg hasta la próxima señal", show_alert=True)
+        return
+
+    user_cooldowns[user_id] = now + timedelta(minutes=5)
 
     msg = await callback.message.answer("⏳ Preparando señal...")
     await asyncio.sleep(5)
@@ -186,6 +187,7 @@ async def send_signal(callback: CallbackQuery):
         ]
     )
     await callback.message.answer(signal_text, reply_markup=btn)
+    await state.set_state(Form.ready_for_signals)  # 👈 остаёмся в этом стейте
 
 # ================= MAIN =================
 async def main():
