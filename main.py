@@ -172,7 +172,13 @@ async def send_signal(callback: CallbackQuery):
     await asyncio.sleep(5)
     await msg.delete()
 
-    pair = get_pair(user_id)
+    # ✅ теперь только выбранная пара
+    user = user_data.get(user_id)
+    if not user or "pair" not in user:
+        await callback.answer("⚠️ Сначала выбери валютную пару!", show_alert=True)
+        return
+
+    pair = user["pair"]
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
