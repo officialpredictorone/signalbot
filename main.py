@@ -172,7 +172,7 @@ async def send_signal(callback: CallbackQuery):
     await asyncio.sleep(5)
     await msg.delete()
 
-    pair = get_pair(user_id) or "USD/JPY OTC"
+    pair = get_pair(user_id)
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
