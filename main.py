@@ -153,6 +153,7 @@ async def send_signal(callback: CallbackQuery):
     user_id = callback.from_user.id
     now = datetime.now()
 
+    # проверка кулдауна
     cooldown_until = user_cooldowns.get(user_id)
     if cooldown_until:
         remaining = (cooldown_until - now).total_seconds()
@@ -168,21 +169,24 @@ async def send_signal(callback: CallbackQuery):
     # кулдаун 5 мин
     user_cooldowns[user_id] = now + timedelta(minutes=5)
 
+    # прелоад
     msg = await callback.message.answer("⏳ Preparando señal...")
     await asyncio.sleep(5)
     await msg.delete()
 
-    # ✅ теперь только выбранная пара
-    user = user_data.get(user_id)
-    if not user or "pair" not in user:
-        await callback.answer("⚠️ Сначала выбери валютную пару!", show_alert=True)
+    # достаём выбранную пару
+    user = user_data.get(user_id, {})
+    pair = user.get("pair")
+    if not pair:
+        await callback.message.answer("⚠️ Сначала выбери валютную pareja!")
         return
 
-    pair = user["pair"]
+    # собираем рандомные параметры
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
 
+    # финальный текст
     signal_text = (
         f"Par: *{pair}*\n"
         f"Periodo de tiempo: *{tf}*\n"
@@ -190,6 +194,7 @@ async def send_signal(callback: CallbackQuery):
         f"Dirección: *{direction}*"
     )
 
+    # клавиатура
     btn = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")],
