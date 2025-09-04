@@ -161,7 +161,7 @@ async def send_signal(callback: CallbackQuery):
     logging.info(f"👉 Запрос сигнала от {user_id}, пара из базы: {pair}")  # лог
 
     if not pair:
-        await callback.message.answer("⚠️ Сначала выбери валютную пару!")
+        await callback.message.answer("⚠️ Сначала выбери валютную pareja!")
         return
 
     msg = await callback.message.answer("⏳ Preparando señal...")
