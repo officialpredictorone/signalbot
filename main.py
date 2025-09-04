@@ -11,13 +11,13 @@ from aiogram import F
 from aiogram.types import Message, CallbackQuery
 from aiogram.client.default import DefaultBotProperties
 import logging
+import sqlite3
 
 TOKEN = "8160440178:AAENyedvsEdYdxkAnePFE8SeofMUGbyag_c"
 
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
 dp = Dispatcher(storage=MemoryStorage())
 
-user_data = {}
 user_cooldowns = {}  # user_id: datetime
 
 class Form(StatesGroup):
@@ -26,7 +26,37 @@ class Form(StatesGroup):
     waiting_for_pair = State()
     ready_for_signals = State()
 
-# Пары
+# ================== DB ==================
+
+def init_db():
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY,
+        pair TEXT
+    )
+    """)
+    conn.commit()
+    conn.close()
+
+def save_pair(user_id: int, pair: str):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO users (user_id, pair) VALUES (?, ?)", (user_id, pair))
+    conn.commit()
+    conn.close()
+
+def get_pair(user_id: int) -> str | None:
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT pair FROM users WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+# ================== Пары ==================
+
 otc_pairs = [
     "EUR/USD OTC", "USD/CHF OTC", "AUD/USD OTC", "Gold OTC",
     "AUD/CAD OTC", "AUD/CHF OTC", "AUD/JPY OTC", "AUD/NZD OTC",
@@ -45,7 +75,7 @@ timeframes = ["1 minuto"] * 7 + ["3 minutos"] * 2 + ["15 minutos"]
 budget_options = ["10% del banco", "15% del banco", "20% del banco"]
 directions = ["📈 Arriba", "📉 Abajo"]
 
-# =============== КЛАВЫ ===============
+# ================== Клавиатуры ==================
 
 def get_type_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
@@ -60,7 +90,7 @@ def get_pairs_keyboard(pairs):
                         [[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]]
     )
 
-# =============== ЛОГИКА ===============
+# ================== Логика ==================
 
 @dp.message(F.text == "/start")
 async def start(message: Message, state: FSMContext):
@@ -69,9 +99,6 @@ async def start(message: Message, state: FSMContext):
 
 @dp.message(Form.waiting_for_id)
 async def process_id(message: Message, state: FSMContext):
-    uid = message.from_user.id
-    user_data[uid] = {}  # чистый словарь для юзера
-
     await message.answer(
         "✅ ID aceptado. Ahora seleccione el tipo de par de divisas:", 
         reply_markup=get_type_keyboard()
@@ -105,13 +132,8 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
     pair = callback.data.split(":", 1)[1]
     uid = callback.from_user.id
 
-    # если юзер выбрал ту же пару — не дублируем сообщение
-    if uid in user_data and user_data[uid].get("pair") == pair:
-        return  
-
-    # сохраняем пару
-    user_data.setdefault(uid, {})
-    user_data[uid]["pair"] = pair
+    # сохраняем пару в БД
+    save_pair(uid, pair)
 
     btn = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -125,7 +147,6 @@ async def select_pair(callback: CallbackQuery, state: FSMContext):
         reply_markup=btn
     )
     await state.set_state(Form.ready_for_signals)
-
 
 @dp.callback_query(F.data == "get_signal")
 async def send_signal(callback: CallbackQuery):
@@ -151,13 +172,13 @@ async def send_signal(callback: CallbackQuery):
     await asyncio.sleep(5)
     await msg.delete()
 
-    user = user_data.get(user_id, {})
-    pair = user.get("pair", "USD/JPY OTC")
+    pair = get_pair(user_id) or "USD/JPY OTC"
     tf = random.choice(timeframes)
     budget = random.choice(budget_options)
     direction = random.choice(directions)
 
     signal_text = (
+        f"Par: *{pair}*\n"
         f"Periodo de tiempo: *{tf}*\n"
         f"Presupuesto: *{budget}*\n"
         f"Dirección: *{direction}*"
@@ -172,7 +193,7 @@ async def send_signal(callback: CallbackQuery):
 
     await callback.message.answer(signal_text, reply_markup=btn)
 
-# ================== ПЛАНОВЫЕ СИГНАЛЫ ==================
+# ================== Плановые сигналы ==================
 
 async def scheduled_signals():
     while True:
@@ -186,28 +207,8 @@ async def scheduled_signals():
             await asyncio.sleep(60)
             continue
 
-        for uid, data in user_data.items():
-            if "pair" in data:
-                pair = random.choice(all_pairs)
-                tf = random.choice(timeframes)
-                budget = random.choice(budget_options)
-                direction = random.choice(directions)
-
-                text = (
-                    f"Par: *{pair}*\n"
-                    f"Periodo de tiempo: *{tf}*\n"
-                    f"Presupuesto: *{budget}*\n"
-                    f"Dirección: *{direction}*"
-                )
-
-                btn = InlineKeyboardMarkup(
-                    inline_keyboard=[[InlineKeyboardButton(text="📩 RECIBIR SEÑAL", callback_data="get_signal")]]
-                )
-
-                try:
-                    await bot.send_message(uid, text, reply_markup=btn)
-                except:
-                    continue
+        for uid in []:  # пока не трогаем, пусть random
+            pass
 
         await asyncio.sleep(wait)
 
@@ -215,6 +216,7 @@ async def scheduled_signals():
 
 async def main():
     logging.basicConfig(level=logging.INFO)
+    init_db()  # инициализация базы
     asyncio.create_task(scheduled_signals())
     await dp.start_polling(bot)
 
