@@ -12,7 +12,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.client.default import DefaultBotProperties
 import logging
 
-TOKEN = "YOUR_TOKEN"
+TOKEN = "8160440178:AAENyedvsEdYdxkAnePFE8SeofMUGbyag_c"
 
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
 dp = Dispatcher(storage=MemoryStorage())
