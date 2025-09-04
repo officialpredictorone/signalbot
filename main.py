@@ -86,7 +86,7 @@ def get_type_keyboard():
 def get_pairs_keyboard(pairs):
     return InlineKeyboardMarkup(
         inline_keyboard=[[InlineKeyboardButton(text=p, callback_data=f"pair:{p}")] for p in pairs] +
-                        [[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_types")]]
+                        [[InlineKeyboardButton(text="🔙 Atrás", callback_data="back_to_types")]]
     )
 
 # ================= HANDLERS =================
