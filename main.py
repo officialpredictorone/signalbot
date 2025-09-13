@@ -189,6 +189,45 @@ async def send_signal(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(signal_text, reply_markup=btn)
     await state.set_state(Form.ready_for_signals)  # 👈 остаёмся в этом стейте
 
+# ================= AUTO SIGNALS =================
+async def scheduled_signals():
+    while True:
+        now = datetime.utcnow() - timedelta(hours=5)  # время Лимы
+        hour = now.hour
+
+        # определяем задержку
+        if 9 <= hour < 18:
+            delay = 60 * 60 * 3   # каждые 3 часа
+        elif 18 <= hour < 24:
+            delay = 60 * 60 * 1   # каждый час
+        else:
+            delay = 60 * 30       # ночью ничего, ждём 30 минут и проверяем снова
+
+        if 9 <= hour < 24:  # только с 9 утра до полуночи
+            conn = sqlite3.connect(DB_FILE)
+            cur = conn.cursor()
+            cur.execute("SELECT user_id, pair FROM users")
+            users = cur.fetchall()
+            conn.close()
+
+            for uid, pair in users:
+                tf = random.choice(timeframes)
+                budget = random.choice(budget_options)
+                direction = random.choice(directions)
+
+                signal_text = (
+                    f"Par: *{pair}*\n"
+                    f"Periodo de tiempo: *{tf}*\n"
+                    f"Presupuesto: *{budget}*\n"
+                    f"Dirección: *{direction}*"
+                )
+                try:
+                    await bot.send_message(uid, signal_text)
+                except Exception as e:
+                    logging.warning(f"Не удалось отправить {uid}: {e}")
+
+        await asyncio.sleep(delay)
+
 # ================= MAIN =================
 async def main():
     logging.basicConfig(level=logging.INFO)
