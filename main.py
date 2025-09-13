@@ -150,7 +150,7 @@ async def send_signal(callback: CallbackQuery, state: FSMContext):
     logging.info(f"🔍 Пара из базы для {user_id}: {pair}")
 
     if not pair:
-        await callback.message.answer("⚠️ Сначала выбери валютную pareja!")
+        await callback.message.answer("⚠️ Primero, elige un par de divisas!")
         return
 
     # cooldown check
