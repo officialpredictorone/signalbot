@@ -192,41 +192,45 @@ async def send_signal(callback: CallbackQuery, state: FSMContext):
 # ================= AUTO SIGNALS =================
 async def scheduled_signals():
     while True:
-        now = datetime.utcnow() - timedelta(hours=5)  # время Лимы
+        # текущее время в UTC+5
+        now = datetime.utcnow() + timedelta(hours=5)
         hour = now.hour
 
-        # определяем задержку
-        if 9 <= hour < 18:
-            delay = 60 * 60 * 3   # каждые 3 часа
-        elif 18 <= hour < 24:
-            delay = 60 * 60 * 1   # каждый час
+        if 19 <= hour or hour < 4:  # с 19:00 до 04:00
+            wait = 3 * 60 * 60
+        elif 4 <= hour < 10:        # с 04:00 до 10:00
+            wait = 60 * 60
         else:
-            delay = 60 * 30       # ночью ничего, ждём 30 минут и проверяем снова
+            await asyncio.sleep(60)  # проверка каждую минуту
+            continue
 
-        if 9 <= hour < 24:  # только с 9 утра до полуночи
-            conn = sqlite3.connect(DB_FILE)
-            cur = conn.cursor()
-            cur.execute("SELECT user_id, pair FROM users")
-            users = cur.fetchall()
-            conn.close()
-
-            for uid, pair in users:
+        for uid, data in user_data.items():
+            if "pair" in data:
+                pair = random.choice(all_pairs)
                 tf = random.choice(timeframes)
                 budget = random.choice(budget_options)
                 direction = random.choice(directions)
 
-                signal_text = (
+                text = (
                     f"Par: *{pair}*\n"
                     f"Periodo de tiempo: *{tf}*\n"
                     f"Presupuesto: *{budget}*\n"
                     f"Dirección: *{direction}*"
                 )
-                try:
-                    await bot.send_message(uid, signal_text)
-                except Exception as e:
-                    logging.warning(f"Не удалось отправить {uid}: {e}")
 
-        await asyncio.sleep(delay)
+                btn = InlineKeyboardMarkup(
+                    inline_keyboard=[[InlineKeyboardButton(
+                        text="📩 RECIBIR SEÑAL",
+                        callback_data="get_signal"
+                    )]]
+                )
+
+                try:
+                    await bot.send_message(uid, text, reply_markup=btn)
+                except:
+                    continue
+
+        await asyncio.sleep(wait)
 
 # ================= MAIN =================
 async def main():
