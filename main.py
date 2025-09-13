@@ -190,45 +190,55 @@ async def send_signal(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Form.ready_for_signals)  # 👈 остаёмся в этом стейте
 
 # ================= AUTO SIGNALS =================
+def get_all_users():
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM users")
+    rows = cur.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
+    
+
 async def scheduled_signals():
     while True:
         # текущее время в UTC+5
         now = datetime.utcnow() + timedelta(hours=5)
         hour = now.hour
 
-        if 19 <= hour or hour < 4:  # с 19:00 до 04:00
+        if 19 <= hour or hour < 4:   # с 19:00 до 04:00 → каждые 3 часа
             wait = 3 * 60 * 60
-        elif 4 <= hour < 10:        # с 04:00 до 10:00
+        elif 4 <= hour < 10:         # с 04:00 до 10:00 → каждый час
             wait = 60 * 60
         else:
-            await asyncio.sleep(60)  # проверка каждую минуту
+            await asyncio.sleep(60)  # ночью с 10:00 до 19:00 проверяем раз в минуту
             continue
 
-        for uid, data in user_data.items():
-            if "pair" in data:
-                pair = random.choice(all_pairs)
-                tf = random.choice(timeframes)
-                budget = random.choice(budget_options)
-                direction = random.choice(directions)
+        # формируем сигнал
+        pair = random.choice(all_pairs)
+        tf = random.choice(timeframes)
+        budget = random.choice(budget_options)
+        direction = random.choice(directions)
 
-                text = (
-                    f"Par: *{pair}*\n"
-                    f"Periodo de tiempo: *{tf}*\n"
-                    f"Presupuesto: *{budget}*\n"
-                    f"Dirección: *{direction}*"
-                )
+        text = (
+            f"Par: *{pair}*\n"
+            f"Periodo de tiempo: *{tf}*\n"
+            f"Presupuesto: *{budget}*\n"
+            f"Dirección: *{direction}*"
+        )
 
-                btn = InlineKeyboardMarkup(
-                    inline_keyboard=[[InlineKeyboardButton(
-                        text="📩 RECIBIR SEÑAL",
-                        callback_data="get_signal"
-                    )]]
-                )
+        btn = InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(
+                text="📩 RECIBIR SEÑAL",
+                callback_data="get_signal"
+            )]]
+        )
 
-                try:
-                    await bot.send_message(uid, text, reply_markup=btn)
-                except:
-                    continue
+        # рассылаем всем юзерам из базы
+        for uid in get_all_users():
+            try:
+                await bot.send_message(uid, text, reply_markup=btn)
+            except Exception as e:
+                logging.warning(f"❌ No se pudo enviar {uid}: {e}")
 
         await asyncio.sleep(wait)
 
@@ -236,6 +246,7 @@ async def scheduled_signals():
 async def main():
     logging.basicConfig(level=logging.INFO)
     init_db()
+    asyncio.create_task(scheduled_signals())
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
