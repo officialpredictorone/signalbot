@@ -190,27 +190,24 @@ async def send_signal(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Form.ready_for_signals)  # 👈 остаёмся в этом стейте
 
 # ================= AUTO SIGNALS =================
-def get_all_users():
-    conn = sqlite3.connect(DB_FILE)
-    cur = conn.cursor()
-    cur.execute("SELECT user_id FROM users")
-    rows = cur.fetchall()
-    conn.close()
-    return [row[0] for row in rows]
-    
-
 async def scheduled_signals():
     while True:
-        # текущее время в UTC+5
-        now = datetime.utcnow() + timedelta(hours=5)
+        now = datetime.utcnow() + timedelta(hours=5)  # локальное время UTC+5
         hour = now.hour
 
-        if 19 <= hour or hour < 4:   # с 19:00 до 04:00 → каждые 3 часа
-            wait = 3 * 60 * 60
-        elif 4 <= hour < 10:         # с 04:00 до 10:00 → каждый час
-            wait = 60 * 60
+        # с 19:00 до 04:00 → раз в 3 часа
+        if 19 <= hour or hour < 4:
+            interval = 3
+        # с 04:00 до 10:00 → раз в час
+        elif 4 <= hour < 10:
+            interval = 1
         else:
-            await asyncio.sleep(60)  # ночью с 10:00 до 19:00 проверяем раз в минуту
+            # с 10:00 до 19:00 → пауза до 19:00
+            next_time = now.replace(hour=19, minute=0, second=0, microsecond=0)
+            if next_time < now:
+                next_time += timedelta(days=1)
+            sleep_seconds = (next_time - now).total_seconds()
+            await asyncio.sleep(sleep_seconds)
             continue
 
         # формируем сигнал
@@ -240,7 +237,11 @@ async def scheduled_signals():
             except Exception as e:
                 logging.warning(f"❌ No se pudo enviar {uid}: {e}")
 
-        await asyncio.sleep(wait)
+        # ждём до следующего интервала
+        next_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=interval)
+        sleep_seconds = (next_time - (datetime.utcnow() + timedelta(hours=5))).total_seconds()
+        if sleep_seconds > 0:
+            await asyncio.sleep(sleep_seconds)
 
 # ================= MAIN =================
 async def main():
