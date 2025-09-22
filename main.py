@@ -69,7 +69,7 @@ index_pairs = [
 
 all_pairs = otc_pairs + real_pairs + index_pairs
 
-timeframes = ["10 minutos"] * 5 + ["15 minutos"] * 3 + ["20 minutos"] * 2 + ["30 minutos"]
+timeframes = ["1 minutos"] * 5 + ["2 minutos"] * 3 + ["3 minutos"] * 2 + ["5 minutos"]
 budget_options = ["20$", "30$", "40$"]
 directions = ["📈 Arriba", "📉 Abajo"]
 
